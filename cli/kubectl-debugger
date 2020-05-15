@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+
+import click
+import requests
+import sys
+import os
+
+
+@click.option('--namespace', '-n',  default="default", help='Namespace to launch debugger pod')
+@click.option('--image', '-i',  default="sepulworld/kubectl-debugger", help='Debugger docker image to use')
+@cli.command()
+def run(namespace, image):
+    """Debugger launch!"""
+
+
+if __name__ == '__main__':
+    run()
