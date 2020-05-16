@@ -20,5 +20,3 @@ flake8 = "^3.8"
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
 
-[tool.poetry.scripts]
-kubectl-debugger = "kubectl_debugger.kubectl-debugger:run"

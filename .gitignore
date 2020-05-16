@@ -1,2 +1,5 @@
 kubectl_debugger/__pycache__/
 kubectl_debugger.egg-info/
+.vscode
+build/
+dist/

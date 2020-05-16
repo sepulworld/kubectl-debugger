@@ -1,16 +1,75 @@
 #!/usr/bin/env python3
 
 import click
-import requests
-import sys
-import os
+import time
+
+from kubernetes import config, client
+from kubernetes.stream import stream
+
+@click.command()
+@click.option(
+    '--namespace',
+    '-n',
+    default="default",
+    help='Namespace to launch debugger pod')
+@click.option(
+    '--image',
+    '-i',
+    default="sepulworld/kubectl-debugger",
+    help='Debugger docker image to use')
+@click.option(
+    '--tag',
+    '-t',
+    default="lastest",
+    help='Image tag for debugger image')
+@click.option(
+    '--name',
+    '-a',
+    default="kubectl-debugger",
+    help='base name of the debugger pod')
+def run(name, namespace, image, tag):
+    """Debugger launch"""
+    config.load_kube_config()
+    k8s_client = client.CoreV1Api()
+    timestamp = int(time.time())
+    unique_name = f"{name}-{str(timestamp)}"
+
+    _init_debugger_pod(
+        k8s_client, unique_name, namespace,
+        image, tag, timestamp)
+    exec_command = ['/bin/sh']
+    stream(k8s_client.connect_get_namespaced_pod_exec,
+           unique_name,
+           namespace,
+           command=exec_command,
+           stderr=True, stdin=True,
+           stdout=True, tty=False,
+           _preload_content=False)
 
 
-@click.option('--namespace', '-n',  default="default", help='Namespace to launch debugger pod')
-@click.option('--image', '-i',  default="sepulworld/kubectl-debugger", help='Debugger docker image to use')
-@cli.command()
-def run(namespace, image):
-    """Debugger launch!"""
+def _init_debugger_pod(k8s_client, name, namespace, image, tag, timestamp):
+    pod_manifest = {
+            'apiVersion': 'v1',
+            'kind': 'Pod',
+            'metadata': {
+                'name': name
+            },
+            'spec': {
+                'containers': [{
+                    'image': f"{image}:{tag}",
+                    'name': 'kubectl-debugger',
+                }]
+            }
+        }
+    resp = k8s_client.create_namespaced_pod(body=pod_manifest,
+                                            namespace=namespace)
+    while True:
+        resp = k8s_client.read_namespaced_pod(name=name,
+                                              namespace=namespace)
+        if resp.status.phase != 'Pending':
+            break
+        time.sleep(1)
+    print("Debugger pod online")
 
 
 if __name__ == '__main__':
