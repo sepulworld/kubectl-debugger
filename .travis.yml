@@ -1,51 +1,37 @@
 language: python
-python: "3.8"
+python: '3.8'
 dist: bionic
-
 stages:
-  - lint
-  - test
-  - name: deploy
-    if: tag IS present
-
+- lint
+- test
+- name: deploy
+  if: tag IS present
 cache:
   pip: true
   directories:
-    - "$HOME/.cache/pre-commit"
-
+  - "$HOME/.cache/pre-commit"
 jobs:
   include:
-    - stage: lint
-      install:
-        - pip install pre-commit
-        - pre-commit install-hooks
-      script:
-        - pre-commit run --all-files
-    - stage: test
-      install:
-        - pip install --upgrade pip
-        - pip install poetry
-        - poetry install -v
-      script:
-        - pytest --cov
-    - stage: deploy
-      script:
-        - echo Deploying to PyPI...
-
+  - stage: lint
+    install:
+    - pip install pre-commit
+    - pre-commit install-hooks
+    script:
+    - pre-commit run --all-files
+  - stage: test
+    install:
+    - pip install --upgrade pip
+    - pip install poetry
+    - poetry install -v
+    script:
+    - pytest --cov
+  - stage: deploy
+    script:
+    - echo Deploying to PyPI...
 before_deploy:
-  # User and password environment variables are set as hidden variables through
-  # the web interface in the project settings.
-  - pip install --upgrade pip
-  - pip install poetry
-  - poetry config http-basic.pypi $PYPI_USER $PYPI_PASS
-  - poetry build
-
+- pip install --upgrade pip
+- pip install poetry
 deploy:
-  provider: script
-  script: poetry publish
-  skip_cleanup: true
-  on:
-    all_branches: true  # Travis recognizes tag names as "branches"
-    condition: $TRAVIS_BUILD_STAGE_NAME = Deploy
-    repo: sepulworld/kubectl-debugger
-    tags: true
+  provider: pypi
+  password:
+    secure: qTaktd1zJ8E2MttcB2gaJBhZ1P9dO/9u7Jg3Rru0G7cY4pTzSCVaflcsiT+VE74lJ+0aoiCda2eodF471rTarlspHo1DcCsiAzzEEMoof0O+PaK96DoZoorSHRwBPKVv7tpsjbPt9fb39FLynRcilaZ91N/TqmQM6mGKlmCwXookhq0xsSUQsmEu4JtGf2sls2EYBeT2Dnp1HVFFp3H5NaafpLikyJSEh5tIf4XhgpVt9sQ8zlSmvxLYG6vP7k8laDhEFiymNGhQr0+7DvjEnTZNitGWVMtaPM8hYyKorSLQqMg6uN6TTeAi9debFPmBHy6Rca2y7G3at5idCTR1jlM1QWkV0EfkGY5D7JMP/foEu4avZD3/qIxbG8WxwXu5vrKvWEjjng6Q2RtqxxII/NMj3ZiPzfSjIZ8bWHhVW1jUl7uFryaTuq+kO8Lx6o2So2xz+bGchmUIqAbnW8GZ735UJ8Z5vabFlfGteKz3I+DSgwCB8XgkrIFJ1J7uf6xysB0aOkrrn3D5E5ougmtPCjOQqE8XUDjeFLoC8wfm7f1isOM76hjXzMC/VasaYqyYoYE27yGkJUmYzX4xA2Mxx7STJAWd/hW+AY54RHILdK840RWp9n0StRfwks5Yx+jEweqQk5qUGkKSEAM0wEY2/Ga0uLHZ/GMdlhtYvH9t6l4=
