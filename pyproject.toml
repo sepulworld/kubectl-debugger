@@ -12,7 +12,7 @@ kubernetes = "^11.0"
 click = "^7.1"
 
 [tool.poetry.dev-dependencies]
-ipython = "^7.14"
+ipython = "^8.10"
 pytest = "^5.4"
 flake8 = "^3.8"
 
